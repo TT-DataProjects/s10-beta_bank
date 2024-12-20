@@ -1,0 +1,12 @@
+Feature,Importance
+Balance,552
+EstimatedSalary,514
+CreditScore,431
+Age,391
+Tenure,335
+NumOfProducts,267
+Gender,138
+IsActiveMember,127
+Geography_Germany,105
+HasCrCard,76
+Geography_Spain,64
