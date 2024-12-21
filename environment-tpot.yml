@@ -1,0 +1,30 @@
+name: tpot
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python=3.11
+  - numpy
+  - scipy
+  - scikit-learn
+  - pandas
+  - matplotlib
+  - seaborn
+  - joblib
+  - pytorch
+  - nbformat>=4.2.0
+  - pip
+  - pip:
+      - deap
+      - update_checker
+      - tqdm
+      - plotly
+      - imblearn
+      - stopit
+      - xgboost
+      - dask[delayed]
+      - dask[dataframe]
+      - dask-ml
+      - fsspec
+      - distributed
+      - tpot
