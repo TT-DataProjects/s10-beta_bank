@@ -11,10 +11,26 @@ from sklearn.metrics import (
     classification_report,
     confusion_matrix,
     roc_curve,
+    precision_recall_curve,
+    make_scorer,
+    auc
 )
 
 
-class ModelEvaluator:
+# Create the scoring function
+recall_1_score = make_scorer(recall_score, pos_label=1)
+roc_auc_scorer = make_scorer(roc_auc_score)
+
+# Define PR AUC scoring function
+def pr_auc_score(y_true, y_probs):
+    precision, recall, _ = precision_recall_curve(y_true, y_probs)
+    return auc(recall, precision)
+
+# Create a scorer for TPOT
+pr_auc_scorer = make_scorer(pr_auc_score)
+
+
+class Evaluator:
     """
     A utility class for evaluating machine learning models.
     """
@@ -39,6 +55,7 @@ class ModelEvaluator:
         f1 = f1_score(self.y_true, self.y_pred)
         accuracy = accuracy_score(self.y_true, self.y_pred)
         roc_auc = roc_auc_score(self.y_true, self.y_proba) if self.y_proba is not None else None
+        pr_auc = pr_auc_score(self.y_true, self.y_proba) if self.y_proba is not None else None
 
         display(Markdown("### **Scores**"))
         print(f"\033[1mAccuracy Score\033[0m\t: {accuracy:0.4f}")
@@ -47,6 +64,8 @@ class ModelEvaluator:
         print(f"\033[1mF1 Score\033[0m\t: {f1:0.4f}")
         if roc_auc is not None:
             print(f"\033[1mROC AUC Score\033[0m\t: {roc_auc:0.4f}")
+        if pr_auc is not None:
+            print(f"\033[1mPR AUC Score\033[0m\t: {pr_auc:0.4f}")
 
         print("\nClassification Report:")
         print(classification_report(self.y_true, self.y_pred))
@@ -63,7 +82,7 @@ class ModelEvaluator:
         plt.title("Confusion Matrix")
         plt.show()
 
-    def plot_roc_curve(self):
+    def roc_curve(self):
         """
         Plot the ROC curve using Plotly.
         """
@@ -96,6 +115,36 @@ class ModelEvaluator:
             title="ROC Curve",
             xaxis_title="False Positive Rate",
             yaxis_title="True Positive Rate",
+            showlegend=True,
+            width=700,
+            height=600,
+            autosize=False,
+        )
+
+        fig.show()
+
+    def pr_curve(self):
+        """
+        Plot the Precision-Recall curve using Plotly.
+        """
+        if self.y_proba is None:
+            raise ValueError("Predicted probabilities are required to plot the PR curve.")
+
+        # Compute Precision-Recall curve
+        precision, recall, thresholds = precision_recall_curve(self.y_true, self.y_proba)
+        pr_auc = pr_auc_score(self.y_true, self.y_proba)
+
+        # Create a Plotly figure
+        fig = go.Figure()
+
+        # Add the PR curve
+        fig.add_trace(go.Scatter(x=recall, y=precision, mode="lines", name=f"AUC = {pr_auc:.2f}"))
+
+        # Update layout
+        fig.update_layout(
+            title="Precision-Recall Curve",
+            xaxis_title="Recall",
+            yaxis_title="Precision",
             showlegend=True,
             width=700,
             height=600,
